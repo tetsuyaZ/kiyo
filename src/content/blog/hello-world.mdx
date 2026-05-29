@@ -1,0 +1,63 @@
+---
+title: "Hello World - 我的博客启航之旅"
+description: "记录搭建个人博客的过程，使用 Astro + Tailwind CSS 构建高性能静态站点"
+publishDate: 2026-05-30
+tags: ["Astro", "Blog", "Frontend"]
+draft: false
+---
+
+## 为什么选择搭建个人博客？
+
+在这个信息爆炸的时代，拥有一个属于自己的小天地显得尤为珍贵。博客不仅是记录思考和技术积累的地方，更是与世界对话的窗口。
+
+## 技术选型
+
+经过对比多个静态站点生成器，最终选择了 **Astro** 作为博客的核心框架：
+
+- **零 JavaScript 默认输出** - 极致的加载性能
+- **Islands 架构** - 按需加载交互组件
+- **内置 Markdown/MDX 支持** - 天然适合内容创作
+- **灵活的集成系统** - Tailwind CSS、React 等无缝接入
+
+### 代码高亮示例
+
+Astro 内置了 Expressive Code 提供代码高亮：
+
+```typescript
+// 一个简单的 TypeScript 示例
+interface BlogPost {
+  title: string;
+  content: string;
+  publishDate: Date;
+  tags: string[];
+}
+
+function createPost(data: Partial<BlogPost>): BlogPost {
+  return {
+    title: data.title ?? 'Untitled',
+    content: data.content ?? '',
+    publishDate: data.publishDate ?? new Date(),
+    tags: data.tags ?? [],
+  };
+}
+```
+
+## 设计哲学
+
+简约而不简单。整个博客采用：
+
+1. **极简配色** - 以黑白灰为基调，樱花粉作为点缀
+2. **流畅动画** - 渐进式加载，花瓣飘落等细节动画
+3. **响应式布局** - 完美适配各种设备
+4. **内容为王** - 所有设计服务于内容阅读体验
+
+## 未来计划
+
+- [ ] 添加标签分类系统
+- [ ] 实现全文搜索
+- [ ] 集成评论系统
+- [ ] 添加 RSS 订阅
+
+> 每一个伟大的博客，都始于第一篇文章。
+
+希望这个小站能陪伴我成长，也希望能在这里遇到志同道合的朋友。

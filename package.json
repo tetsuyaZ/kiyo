@@ -1,0 +1,39 @@
+{
+  "name": "kiyo",
+  "version": "1.0.0",
+  "description": "Kiyo's Personal Blog & Homepage",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tetsuyaZ/kiyo.git"
+  },
+  "keywords": [
+    "blog",
+    "personal",
+    "astro"
+  ],
+  "author": "Kiyo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tetsuyaZ/kiyo/issues"
+  },
+  "homepage": "https://github.com/tetsuyaZ/kiyo#readme",
+  "dependencies": {
+    "@astrojs/mdx": "^6.0.1",
+    "@rolldown/binding-win32-x64-msvc": "^1.0.3",
+    "@tailwindcss/typography": "^0.5.19",
+    "astro": "^6.4.2",
+    "astro-expressive-code": "^0.42.0",
+    "tailwindcss": "^4.3.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.0",
+    "postcss": "^8.5.15"
+  }
+}

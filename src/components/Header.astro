@@ -1,0 +1,126 @@
+---
+const currentPath = Astro.url.pathname;
+const links = [
+  { href: '/kiyo/', label: 'Home' },
+  { href: '/kiyo/blog/', label: 'Blog' },
+  { href: '/kiyo/about/', label: 'About' },
+];
+
+function isActive(href: string) {
+  if (href === '/kiyo/') return currentPath === href;
+  return currentPath.startsWith(href);
+}
+---
+
+<header id="siteHeader" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500">
+  <nav class="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+    <!-- Logo with Sakura icon -->
+    <a href="/kiyo/" class="flex items-center gap-2 group relative z-10">
+      <div class="relative">
+        <svg class="w-7 h-7 text-accent group-hover:rotate-[135deg] transition-transform duration-700 ease-out" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C12 2 9.5 6 9.5 9C9.5 10.5 10.5 12 12 12C13.5 12 14.5 10.5 14.5 9C14.5 6 12 2 12 2Z"/>
+          <path d="M12 22C12 22 14.5 18 14.5 15C14.5 13.5 13.5 12 12 12C10.5 12 9.5 13.5 9.5 15C9.5 18 12 22 12 22Z"/>
+          <path d="M2 12C2 12 6 9.5 9 9.5C10.5 9.5 12 10.5 12 12C12 13.5 10.5 14.5 9 14.5C6 14.5 2 12 2 12Z"/>
+          <path d="M22 12C22 12 18 14.5 15 14.5C13.5 14.5 12 13.5 12 12C12 10.5 13.5 9.5 15 9.5C18 9.5 22 12 22 12Z"/>
+          <path d="M4.93 4.93C4.93 4.93 8.17 6.34 10.06 8.23C10.95 9.12 11.34 10.34 10.59 11.41C9.84 12.48 8.56 12.48 7.67 11.59C5.78 9.7 4.93 4.93 4.93 4.93Z"/>
+          <path d="M19.07 19.07C19.07 19.07 15.83 17.66 13.94 15.77C13.05 14.88 12.66 13.66 13.41 12.59C14.16 11.52 15.44 11.52 16.33 12.41C18.22 14.3 19.07 19.07 19.07 19.07Z"/>
+          <path d="M4.93 19.07C4.93 19.07 6.34 15.83 8.23 13.94C9.12 13.05 10.34 12.66 11.41 13.41C12.48 14.16 12.48 15.44 11.59 16.33C9.7 18.22 4.93 19.07 4.93 19.07Z"/>
+          <path d="M19.07 4.93C19.07 4.93 17.66 8.17 15.77 10.06C14.88 10.95 13.66 11.34 12.59 10.59C11.52 9.84 11.52 8.56 12.41 7.67C14.3 5.78 19.07 4.93 19.07 4.93Z"/>
+        </svg>
+        <div class="absolute inset-0 w-full h-full bg-accent/20 rounded-full blur-md group-hover:bg-accent/40 transition-all duration-500"></div>
+      </div>
+      <span class="font-bold text-lg tracking-tight">
+        <span class="text-accent">K</span>iyo
+      </span>
+    </a>
+
+    <!-- Navigation links with animated underline -->
+    <div class="flex items-center gap-1 relative">
+      {links.map(({ href, label }) => (
+        <a
+          href={href}
+          class:list={[
+            'nav-link relative px-4 py-2 text-sm font-medium transition-all duration-300',
+            isActive(href)
+              ? 'text-accent'
+              : 'text-text-secondary hover:text-text'
+          ]}
+          data-active={isActive(href) ? 'true' : 'false'}
+        >
+          {label}
+          <span class:list={[
+            'absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] rounded-full transition-all duration-500 ease-out',
+            isActive(href)
+              ? 'w-4/5 bg-gradient-to-r from-accent to-accent-dark'
+              : 'w-0 bg-accent/50 group-hover:w-3/5'
+          ]}></span>
+        </a>
+      ))}
+    </div>
+  </nav>
+
+  <!-- Decorative bottom gradient line -->
+  <div class="h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent opacity-0 transition-opacity duration-500" id="headerLine"></div>
+</header>
+
+<style>
+  /* Header scroll states */
+  #siteHeader {
+    background: transparent;
+  }
+
+  #siteHeader.scrolled {
+    background: rgba(255, 250, 252, 0.8);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    box-shadow: 0 4px 30px rgba(232, 164, 184, 0.08);
+  }
+
+  #siteHeader.scrolled #headerLine {
+    opacity: 1;
+  }
+
+  /* Nav link hover underline */
+  .nav-link:hover span {
+    width: 60% !important;
+  }
+
+  /* Active indicator pulse */
+  .nav-link[data-active="true"]::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #e8a4b8;
+    animation: dotPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes dotPulse {
+    0%, 100% { opacity: 0.4; transform: translateX(-50%) scale(1); }
+    50% { opacity: 1; transform: translateX(-50%) scale(1.5); }
+  }
+</style>
+
+<script>
+  const header = document.getElementById('siteHeader')!;
+
+  function updateHeader() {
+    if (window.scrollY > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }
+
+  window.addEventListener('scroll', updateHeader, { passive: true });
+  updateHeader();
+
+  // Re-apply on view transition
+  document.addEventListener('astro:after-swap', () => {
+    updateHeader();
+  });
+</script>

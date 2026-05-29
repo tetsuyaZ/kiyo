@@ -1,0 +1,296 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog'))
+  .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
+
+const stats = {
+  total: posts.length,
+  published: posts.filter(p => !p.data.draft).length,
+  drafts: posts.filter(p => p.data.draft).length,
+  tags: [...new Set(posts.flatMap(p => p.data.tags))].length,
+};
+---
+
+<BaseLayout title="Admin" description="Blog administration panel">
+  <section class="max-w-6xl mx-auto px-6 py-16">
+    <div class="mb-10">
+      <h1 class="text-4xl font-bold mb-2 opacity-0 animate-slide-up">管理面板</h1>
+      <p class="text-text-secondary opacity-0 animate-slide-up stagger-1">管理博客文章和内容</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 opacity-0 animate-slide-up stagger-2">
+      <div class="p-5 bg-card rounded-xl border border-border">
+        <p class="text-3xl font-bold text-text">{stats.total}</p>
+        <p class="text-sm text-text-secondary mt-1">全部文章</p>
+      </div>
+      <div class="p-5 bg-card rounded-xl border border-border">
+        <p class="text-3xl font-bold text-green-500">{stats.published}</p>
+        <p class="text-sm text-text-secondary mt-1">已发布</p>
+      </div>
+      <div class="p-5 bg-card rounded-xl border border-border">
+        <p class="text-3xl font-bold text-amber-500">{stats.drafts}</p>
+        <p class="text-sm text-text-secondary mt-1">草稿</p>
+      </div>
+      <div class="p-5 bg-card rounded-xl border border-border">
+        <p class="text-3xl font-bold text-accent">{stats.tags}</p>
+        <p class="text-sm text-text-secondary mt-1">标签</p>
+      </div>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-8">
+      <!-- Post Editor -->
+      <div class="lg:col-span-2 opacity-0 animate-slide-up stagger-3">
+        <div class="bg-card rounded-xl border border-border p-6">
+          <h2 class="text-xl font-bold mb-6">新建文章</h2>
+          
+          <div class="space-y-4" id="editor-form">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-1.5" for="title">标题</label>
+                <input type="text" id="title" placeholder="输入文章标题..." 
+                  class="w-full px-4 py-2.5 rounded-lg border border-border bg-bg focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1.5" for="date">发布日期</label>
+                <input type="date" id="date" 
+                  class="w-full px-4 py-2.5 rounded-lg border border-border bg-bg focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all" />
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium mb-1.5" for="description">描述</label>
+              <input type="text" id="description" placeholder="简短描述文章内容..."
+                class="w-full px-4 py-2.5 rounded-lg border border-border bg-bg focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all" />
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium mb-1.5" for="tags">标签（逗号分隔）</label>
+              <input type="text" id="tags" placeholder="Astro, TypeScript, Blog..."
+                class="w-full px-4 py-2.5 rounded-lg border border-border bg-bg focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-1.5" for="content">内容 (Markdown)</label>
+              <textarea id="content" rows="12" placeholder="使用 Markdown 编写文章内容..."
+                class="w-full px-4 py-3 rounded-lg border border-border bg-bg focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all font-mono text-sm resize-y"></textarea>
+            </div>
+
+            <div class="flex items-center gap-3 pt-2">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="draft" class="w-4 h-4 rounded border-border text-accent focus:ring-accent" />
+                <span class="text-sm">保存为草稿</span>
+              </label>
+            </div>
+
+            <div class="flex gap-3 pt-4">
+              <button id="generate-btn" 
+                class="px-5 py-2.5 bg-text text-bg rounded-lg font-medium hover:bg-text/90 transition-all">
+                生成 Markdown 文件
+              </button>
+              <button id="save-local-btn"
+                class="px-5 py-2.5 border border-border rounded-lg font-medium hover:bg-bg-secondary transition-all">
+                保存到本地
+              </button>
+              <button id="clear-btn"
+                class="px-5 py-2.5 text-text-secondary hover:text-text transition-all">
+                清空
+              </button>
+            </div>
+          </div>
+
+          <!-- Preview / Output -->
+          <div id="output" class="mt-6 hidden">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-semibold">生成的文件</h3>
+              <button id="copy-btn" class="text-sm text-accent hover:text-accent/80 transition-colors">
+                复制内容
+              </button>
+            </div>
+            <pre id="output-content" class="p-4 bg-bg-secondary rounded-lg text-sm font-mono overflow-x-auto whitespace-pre-wrap"></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Post List -->
+      <div class="opacity-0 animate-slide-up stagger-4">
+        <div class="bg-card rounded-xl border border-border p-6">
+          <h2 class="text-xl font-bold mb-6">文章列表</h2>
+          
+          {posts.length > 0 ? (
+            <div class="space-y-3 max-h-[600px] overflow-y-auto">
+              {posts.map(post => (
+                <div class="p-3 rounded-lg border border-border hover:border-accent/30 transition-all">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex-1 min-w-0">
+                      <h3 class="font-medium text-sm truncate">{post.data.title}</h3>
+                      <p class="text-xs text-text-secondary mt-1">
+                        {post.data.publishDate.toLocaleDateString('zh-CN')}
+                      </p>
+                    </div>
+                    <span class:list={[
+                      'text-xs px-2 py-0.5 rounded-full whitespace-nowrap',
+                      post.data.draft 
+                        ? 'bg-amber-100 text-amber-600' 
+                        : 'bg-green-100 text-green-600'
+                    ]}>
+                      {post.data.draft ? '草稿' : '已发布'}
+                    </span>
+                  </div>
+                  {post.data.tags.length > 0 && (
+                    <div class="flex flex-wrap gap-1 mt-2">
+                      {post.data.tags.slice(0, 3).map(tag => (
+                        <span class="text-xs px-1.5 py-0.5 rounded bg-bg-secondary text-text-secondary">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p class="text-text-secondary text-sm text-center py-8">暂无文章</p>
+          )}
+
+          <!-- Local Drafts -->
+          <div class="mt-6 pt-6 border-t border-border">
+            <h3 class="font-semibold text-sm mb-3">本地草稿</h3>
+            <div id="local-drafts" class="space-y-2">
+              <p class="text-xs text-text-secondary">加载中...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  // Admin panel functionality
+  const titleInput = document.getElementById('title') as HTMLInputElement;
+  const dateInput = document.getElementById('date') as HTMLInputElement;
+  const descInput = document.getElementById('description') as HTMLInputElement;
+  const tagsInput = document.getElementById('tags') as HTMLInputElement;
+  const contentInput = document.getElementById('content') as HTMLTextAreaElement;
+  const draftCheck = document.getElementById('draft') as HTMLInputElement;
+  const output = document.getElementById('output')!;
+  const outputContent = document.getElementById('output-content')!;
+
+  // Set default date
+  dateInput.value = new Date().toISOString().split('T')[0];
+
+  // Generate Markdown file
+  document.getElementById('generate-btn')?.addEventListener('click', () => {
+    if (!titleInput.value.trim()) {
+      alert('请输入文章标题');
+      return;
+    }
+
+    const slug = titleInput.value.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-').replace(/^-|-$/g, '');
+    const tags = tagsInput.value.split(',').map(t => t.trim()).filter(Boolean);
+    const isDraft = draftCheck.checked;
+    
+    const frontmatter = [
+      '---',
+      `title: "${titleInput.value}"`,
+      `description: "${descInput.value}"`,
+      `publishDate: ${dateInput.value}`,
+      `tags: [${tags.map(t => `"${t}"`).join(', ')}]`,
+      `draft: ${isDraft}`,
+      '---',
+      '',
+    ].join('\n');
+
+    const fullContent = frontmatter + (contentInput.value || '在此编写文章内容...');
+    
+    outputContent.textContent = fullContent;
+    output.classList.remove('hidden');
+
+    // Auto download
+    const blob = new Blob([fullContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${slug}.mdx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // Save to localStorage
+  document.getElementById('save-local-btn')?.addEventListener('click', () => {
+    if (!titleInput.value.trim()) {
+      alert('请输入文章标题');
+      return;
+    }
+
+    const drafts = JSON.parse(localStorage.getItem('kiyo-drafts') || '[]');
+    drafts.push({
+      id: Date.now(),
+      title: titleInput.value,
+      date: dateInput.value,
+      description: descInput.value,
+      tags: tagsInput.value,
+      content: contentInput.value,
+      draft: draftCheck.checked,
+      savedAt: new Date().toISOString(),
+    });
+    localStorage.setItem('kiyo-drafts', JSON.stringify(drafts));
+    loadLocalDrafts();
+    alert('已保存到本地草稿');
+  });
+
+  // Clear form
+  document.getElementById('clear-btn')?.addEventListener('click', () => {
+    titleInput.value = '';
+    descInput.value = '';
+    tagsInput.value = '';
+    contentInput.value = '';
+    draftCheck.checked = false;
+    dateInput.value = new Date().toISOString().split('T')[0];
+    output.classList.add('hidden');
+  });
+
+  // Copy output
+  document.getElementById('copy-btn')?.addEventListener('click', () => {
+    navigator.clipboard.writeText(outputContent.textContent || '');
+    const btn = document.getElementById('copy-btn')!;
+    btn.textContent = '已复制!';
+    setTimeout(() => { btn.textContent = '复制内容'; }, 2000);
+  });
+
+  // Load local drafts
+  function loadLocalDrafts() {
+    const container = document.getElementById('local-drafts');
+    if (!container) return;
+    
+    const drafts = JSON.parse(localStorage.getItem('kiyo-drafts') || '[]');
+    
+    if (drafts.length === 0) {
+      container.innerHTML = '<p class="text-xs text-text-secondary">暂无本地草稿</p>';
+      return;
+    }
+
+    container.innerHTML = drafts.map((d: any) => `
+      <div class="flex items-center justify-between p-2 rounded bg-bg-secondary">
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-medium truncate">${d.title}</p>
+          <p class="text-xs text-text-secondary">${new Date(d.savedAt).toLocaleDateString('zh-CN')}</p>
+        </div>
+        <button onclick="deleteDraft(${d.id})" class="text-xs text-red-400 hover:text-red-500 ml-2">删除</button>
+      </div>
+    `).join('');
+  }
+
+  // Delete draft
+  (window as any).deleteDraft = (id: number) => {
+    const drafts = JSON.parse(localStorage.getItem('kiyo-drafts') || '[]');
+    const filtered = drafts.filter((d: any) => d.id !== id);
+    localStorage.setItem('kiyo-drafts', JSON.stringify(filtered));
+    loadLocalDrafts();
+  };
+
+  loadLocalDrafts();
+</script>

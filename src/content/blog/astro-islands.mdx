@@ -1,0 +1,80 @@
+---
+title: "Astro Islands 架构深度解析"
+description: "深入理解 Astro 的 Islands 架构，了解它如何实现极致性能和灵活开发体验"
+publishDate: 2026-05-29
+tags: ["Astro", "Architecture", "Performance"]
+draft: false
+---
+
+## 什么是 Islands Architecture？
+
+传统的 SSR/SSG 框架（如 Next.js、Nuxt）通常会将整个页面作为一个大的组件树来处理。而 Astro 的 Islands 架构采用了一种更加精细的方式：
+
+```
+┌──────────────────────────────────────┐
+│           Static HTML                │
+│  ┌─────────┐        ┌─────────┐     │
+│  │ Island 1 │        │ Island 2 │     │
+│  │(React)   │        │(Vue)    │     │
+│  └─────────┘        └─────────┘     │
+│                                      │
+│         ┌─────────┐                 │
+│         │ Island 3 │                 │
+│         │(Svelte)  │                 │
+│         └─────────┘                 │
+└──────────────────────────────────────┘
+```
+
+## 核心优势
+
+### 1. 零 JavaScript 默认输出
+
+Astro 会将你的组件编译为纯 HTML，只有在明确标记为交互式的组件（Islands）才会加载 JavaScript：
+
+```astro
+---
+import StaticHeader from '../components/Header.astro';
+import InteractiveSearch from '../components/Search.tsx';
+---
+
+<!-- 这个组件不会加载任何 JS -->
+<StaticHeader />
+
+<!-- 只有这个组件会加载 React 运行时 -->
+<InteractiveSearch client:load />
+```
+
+### 2. 多框架共存
+
+你可以在同一个页面中混合使用不同的框架：
+
+```astro
+<ReactComponent client:visible />
+<VueComponent client:idle />
+<SvelteComponent client:media="(max-width: 768px)" />
+```
+
+### 3. 智能加载策略
+
+Astro 提供了多种 `client:` 指令来控制组件的 hydration 时机：
+
+| 指令 | 触发时机 |
+|------|----------|
+| `client:load` | 页面加载时立即 hydrate |
+| `client:idle` | 浏览器空闲时 hydrate |
+| `client:visible` | 组件进入视口时 hydrate |
+| `client:media` | 满足媒体查询时 hydrate |
+| `client:only` | 仅在客户端渲染（跳过 SSR） |
+
+## 性能对比
+
+在实际测试中，Astro 构建的博客站点：
+
+- **Lighthouse 评分**: 接近 100 分
+- **First Contentful Paint**: < 0.5s
+- **Total Blocking Time**: 0ms
+- **Cumulative Layout Shift**: 0
+
+## 总结
+
+Astro 的 Islands 架构代表了前端框架设计的一种新思路：**不是所有内容都需要 JavaScript**。通过智能的代码分割和按需加载，我们可以在保持丰富交互体验的同时，获得极致的性能表现。
